@@ -40,8 +40,7 @@ case opts.type
 when 'sankey'
   paths = Set.new
   links = []
-  nodes = []
-  commits = Set.new
+  node_set = Set.new
 
   opts.repos.each do |repo|
     g = Git.open(repo)
@@ -64,18 +63,18 @@ when 'sankey'
         paths.add(path)
         links << { :source => "T -#{week} weeks", :target => path, :value => diff.to_s }
         # Only add commit if there was activity
-        commits.add("T -#{week} weeks")
+        node_set.add("T -#{week} weeks")
       end
     end
 
     paths.each do |path|
-      nodes << { :name => path }
+      node_set.add(path)
     end
   end
 
   # Convert nodes into list of hashes
-  commits.each do |node|
-    puts node
+  nodes = []
+  node_set.each do |node|
     nodes << { :name => node }
   end
 
