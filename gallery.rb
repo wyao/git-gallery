@@ -52,8 +52,8 @@ when 'sankey'
           # Fold all files into their containing folder
           folded_path = file.split('/')
           folded_path = folded_path.take(folded_path.size - 1)
-          # Fold paths according to the specified level
-          folded_path = folded_path[0..opts.level].join('/')
+          # Fold paths according to the specified level and prepend repo
+          folded_path = ([repo.split('/')[-1]] << folded_path[0..opts.level]).join('/')
           sum = diffs[:insertions] + diffs[:deletions]
           sum += buckets[folded_path] if buckets.has_key?(folded_path)
           buckets[folded_path] = sum
