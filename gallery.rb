@@ -49,12 +49,10 @@ when 'sankey'
     has_activity = false
     g.log.author(opts.author).since("#{week+1} weeks ago").until("#{week} weeks ago").each do |l|
       l.diff_parent.stats[:files].each do |file, diffs|
-        if file.include?('app/') && !file.include?('images') && !file.include?('fonts')
-          folded_path = file.split('/')[0..(-1 * opts.level - 1)].join('/')
-          sum = diffs[:insertions] + diffs[:deletions]
-          sum += buckets[folded_path] if buckets.has_key?(folded_path)
-          buckets[folded_path] = sum
-        end
+        folded_path = file.split('/')[0..(-1 * opts.level - 1)].join('/')
+        sum = diffs[:insertions] + diffs[:deletions]
+        sum += buckets[folded_path] if buckets.has_key?(folded_path)
+        buckets[folded_path] = sum
       end
     end
     buckets.each do |path,diff|
