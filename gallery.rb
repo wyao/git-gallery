@@ -48,17 +48,21 @@ when 'sankey'
       buckets = {}
       has_activity = false
       g.log.author(opts.author).since("#{week+1} weeks ago").until("#{week} weeks ago").each do |l|
-        l.diff_parent.stats[:files].each do |file, diffs|
-          # Fold all files into their containing folder
-          folded_path = file.split('/')
-          folded_path = folded_path.take(folded_path.size - 1)
-          # Fold paths according to the specified level and prepend repo
-          folded_path = ([repo.split('/')[-1]] << folded_path[0..opts.level]).join('/')
-          sum = diffs[:insertions] + diffs[:deletions]
-          if sum > 0
-            sum += buckets[folded_path] if buckets.has_key?(folded_path)
-            buckets[folded_path] = sum
+        begin
+          l.diff_parent.stats[:files].each do |file, diffs|
+            # Fold all files into their containing folder
+            folded_path = file.split('/')
+            folded_path = folded_path.take(folded_path.size - 1)
+            # Fold paths according to the specified level and prepend repo
+            folded_path = ([repo.split('/')[-1]] << folded_path[0..opts.level]).join('/')
+            sum = diffs[:insertions] + diffs[:deletions]
+            if sum > 0
+              sum += buckets[folded_path] if buckets.has_key?(folded_path)
+              buckets[folded_path] = sum
+            end
           end
+        rescue => e
+          # Do nothing
         end
       end
       buckets.each do |path,diff|
