@@ -1,8 +1,11 @@
-require 'git'
+require 'git' # TODO: Deprecate git in favor of grit
+require 'grit'
 require 'json'
 require 'optparse'
 require 'ostruct'
 require 'set'
+
+AIRBNB_DIR = '/Users/wyao/airbnb/airbnb/'
 
 # Default options
 opts = OpenStruct.new
@@ -104,4 +107,42 @@ when 'sunburst'
     end
   end
   exec('open /Applications/Google\ Chrome.app/ clients/sunburst.html --args --allow-file-access-from-files')
+when 'journal'
+  # Change to root git directory (necessary for grit blame to work properly)
+  pwd = Dir.pwd
+  Dir.chdir AIRBNB_DIR
+
+  age = []
+  g = Grit::Repo.new(AIRBNB_DIR)
+
+  Dir.glob("#{opts.repos[0]}/**/*.{rb}") do |file|
+    buckets = {}
+    (2007..2013).each do |year|
+      buckets[year] = 0
+    end
+
+    # Process git blame
+    blames = g.blame(file).lines
+    blames.each do |blame|
+      buckets[blame.commit.committed_date.year] +=1
+    end
+
+    entry = {}
+    entry['name'] = file.sub(opts.repos[0], '')
+    entry['total'] = blames.size
+    entry['articles'] = []
+
+    buckets.each do |year, count|
+      entry['articles'] << [year, count] if count > 0
+    end
+
+    age << entry
+  end
+
+  # Output to file
+  File.open("#{pwd}/data/journal.json", 'w+') do |f|
+    f.write(age.to_json)
+  end
+
+  exec("open /Applications/Google\ Chrome.app/ #{pwd}clients/journal.html --args --allow-file-access-from-files")
 end
