@@ -12,7 +12,7 @@ opts.until = 0
 
 # Parse options
 OptionParser.new do |options|
-  options.banner = "ruby gallery.rb --author 'Willie Yao' --level 1 --repo ~/airbnb/airbnb --type sankey --since 20"
+  options.banner = "ruby gallery.rb --author 'Willie Yao' --level 1 --repo ~/airbnb/airbnb,~/airbnb/hopscotch,~/airbnb/chef --type sankey --since 20"
 
   options.on('--author=', String, 'Commit author (default all)') do |opt|
     opts.author = opt
@@ -86,4 +86,16 @@ when 'sankey'
     f.write(data.to_json)
   end
   exec('open /Applications/Google\ Chrome.app/ clients/sankey.html --args --allow-file-access-from-files')
+when 'sunburst'
+  File.open('data/sunburst.csv', 'w+') do |f|
+    Dir.glob("#{opts.repos[0]}/**/*.{rb,erb,rake,css,json}") do |file|
+      lines, file_name = `#{"wc -l #{file}"}`.split(' ')
+      file_name.sub!(opts.repos[0]+'/', '')
+      file_name.gsub!('-', '_')
+      file_name.gsub!('/', '-')
+      # Output to csv
+      f.puts "#{file_name},#{lines}"
+    end
+  end
+  exec('open /Applications/Google\ Chrome.app/ clients/sunburst.html --args --allow-file-access-from-files')
 end
