@@ -108,7 +108,7 @@ when 'sunburst'
   end
   exec('open /Applications/Google\ Chrome.app/ clients/sunburst.html --args --allow-file-access-from-files')
 when 'journal'
-  START_YEAR = 2007
+  START_YEAR = 2008
   END_YEAR = 2014
 
   # Change to root git directory (necessary for grit blame to work properly)
@@ -122,12 +122,18 @@ when 'journal'
     buckets = {}
     (START_YEAR..END_YEAR).each do |year|
       buckets[year] = 0
+      buckets[year + 0.25] = 0
+      buckets[year + 0.5] = 0
+      buckets[year + 0.75] = 0
     end
 
     # Process git blame
     blames = g.blame(file).lines
     blames.each do |blame|
-      buckets[blame.commit.committed_date.year] +=1
+      # Mathy stuff to split into 4 buckets per year
+      partial = ((blame.commit.committed_date.month - 2) / 3.0).round / 4.0
+      partial = 0 if partial == 0
+      buckets[blame.commit.committed_date.year + partial] += 1
     end
 
     entry = {}
