@@ -50,7 +50,8 @@ when 'sankey'
     (opts.until..opts.since).each do |week|
       buckets = {}
       has_activity = false
-      g.log.author(opts.author).since("#{week+1} weeks ago").until("#{week} weeks ago").each do |l|
+      # Load up to 100 entries
+      g.log(100).author(opts.author).since("#{week+1} weeks ago").until("#{week} weeks ago").each do |l|
         begin
           l.diff_parent.stats[:files].each do |file, diffs|
             # Fold all files into their containing folder
@@ -170,7 +171,7 @@ when 'series'
   contributors = Set.new
 
   g = Git.open(AIRBNB_DIR)
-  g.log(1000).each do |commit|
+  g.log(1000).author('\(willie\)\|\(justin\)').since('16 weeks ago').each do |commit|
     email = commit.author.email
     contributors.add(email)
     date = commit.date.strftime("%Y%m%d")
@@ -178,7 +179,7 @@ when 'series'
     # Update diff
     contributions[date] = {} if !contributions.has_key?(date)
     contributions[date][email] = 0 if !contributions[date].has_key?(date)
-    contributions[date][email] += commit.diff_parent.size
+    contributions[date][email] += commit.diff_parent.insertions + commit.diff_parent.deletions
   end
 
   # Convert set of contributors to array
