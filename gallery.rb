@@ -108,6 +108,9 @@ when 'sunburst'
   end
   exec('open /Applications/Google\ Chrome.app/ clients/sunburst.html --args --allow-file-access-from-files')
 when 'journal'
+  START_YEAR = 2007
+  END_YEAR = 2014
+
   # Change to root git directory (necessary for grit blame to work properly)
   pwd = Dir.pwd
   Dir.chdir AIRBNB_DIR
@@ -117,7 +120,7 @@ when 'journal'
 
   Dir.glob("#{opts.repos[0]}/**/*.{rb}") do |file|
     buckets = {}
-    (2007..2013).each do |year|
+    (START_YEAR..END_YEAR).each do |year|
       buckets[year] = 0
     end
 
@@ -139,10 +142,19 @@ when 'journal'
     age << entry
   end
 
+  # Sort
+  age.sort_by! do |entry|
+    score = 0
+    entry['articles'].each do |bucket|
+      score -= bucket[1] * (END_YEAR - bucket[0])
+    end
+    score
+  end
+
   # Output to file
   File.open("#{pwd}/data/journal.json", 'w+') do |f|
     f.write(age.to_json)
   end
 
-  exec("open /Applications/Google\ Chrome.app/ #{pwd}clients/journal.html --args --allow-file-access-from-files")
+  exec("open /Applications/Google\\ Chrome.app/ #{pwd}/clients/journal.html --args --allow-file-access-from-files")
 end

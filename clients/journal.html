@@ -95,7 +95,7 @@ d3.json("../data/journal.json", function(data) {
 
     g.append("text")
       .attr("y", j*20+25)
-      .attr("x",width+20)
+      .attr("x",width+30)
       .attr("class","label")
       .text(data[j]['name'])
       .style("fill", function(d) { return c(j); })
