@@ -55,8 +55,10 @@ when 'sankey'
           # Fold paths according to the specified level and prepend repo
           folded_path = ([repo.split('/')[-1]] << folded_path[0..opts.level]).join('/')
           sum = diffs[:insertions] + diffs[:deletions]
-          sum += buckets[folded_path] if buckets.has_key?(folded_path)
-          buckets[folded_path] = sum
+          if sum > 0
+            sum += buckets[folded_path] if buckets.has_key?(folded_path)
+            buckets[folded_path] = sum
+          end
         end
       end
       buckets.each do |path,diff|
