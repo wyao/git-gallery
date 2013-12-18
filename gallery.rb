@@ -1,4 +1,4 @@
-require 'git' # TODO: Deprecate git in favor of grit
+require 'git' # TODO: Deprecate git in favor of grit?
 require 'grit'
 require 'json'
 require 'optparse'
@@ -163,4 +163,45 @@ when 'journal'
   end
 
   exec("open /Applications/Google\\ Chrome.app/ #{pwd}/clients/journal.html --args --allow-file-access-from-files")
+when 'series'
+  PAGE_SIZE = 100
+
+  contributions = {}
+  contributors = Set.new
+
+  g = Git.open(AIRBNB_DIR)
+  g.log(1000).each do |commit|
+    email = commit.author.email
+    contributors.add(email)
+    date = commit.date.strftime("%Y%m%d")
+
+    # Update diff
+    contributions[date] = {} if !contributions.has_key?(date)
+    contributions[date][email] = 0 if !contributions[date].has_key?(date)
+    contributions[date][email] += commit.diff_parent.size
+  end
+
+  # Convert set of contributors to array
+  contributors = contributors.to_a
+
+  File.open('data/series.tsv', 'w+') do |f|
+    # Insert first line
+    line = "date"
+    contributors.each { |contributor| line << "\t" << contributor }
+    f.puts(line)
+
+    # Insery each line; entry is hash of emails to diff size
+    contributions.each do |date, entry|
+      line = '' << date
+      contributors.each do |contributor|
+        line << "\t"
+        if entry.has_key?(contributor)
+          line << entry[contributor].to_s
+        else
+          line << '0'
+        end
+      end
+      f.puts(line)
+    end
+  end
 end
