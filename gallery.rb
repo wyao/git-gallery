@@ -9,7 +9,7 @@ AIRBNB_DIR = '/Users/wyao/airbnb/airbnb/'
 
 # Default options
 opts = OpenStruct.new
-opts.author = ''
+opts.author = ['']
 opts.level = 2
 opts.until = 0
 
@@ -17,7 +17,7 @@ opts.until = 0
 OptionParser.new do |options|
   options.banner = "ruby gallery.rb --author 'Willie Yao' --level 1 --repo ~/airbnb/airbnb,~/airbnb/hopscotch,~/airbnb/chef --type sankey --since 20"
 
-  options.on('--author=', String, 'Commit author (default all)') do |opt|
+  options.on('--author=', Array, 'Commit author (default all)') do |opt|
     opts.author = opt
   end
   options.on('--level=', Integer, 'Depth of subfolders to visualize (default 2)') do |opt|
@@ -51,7 +51,7 @@ when 'sankey'
       buckets = {}
       has_activity = false
       # Load up to 100 entries
-      g.log(100).author(opts.author).since("#{week+1} weeks ago").until("#{week} weeks ago").each do |l|
+      g.log(100).author(opts.author[0]).since("#{week+1} weeks ago").until("#{week} weeks ago").each do |l|
         begin
           l.diff_parent.stats[:files].each do |file, diffs|
             # Fold all files into their containing folder
@@ -171,7 +171,15 @@ when 'series'
   contributors = Set.new
 
   g = Git.open(AIRBNB_DIR)
-  g.log(1000).author('\(willie\)\|\(justin\)').since('16 weeks ago').each do |commit|
+
+  # Construct regex of authors
+  author_regex = "\\(#{opts.author.shift}\\)"
+  opts.author.each do |author|
+    author_regex << "\\|\\(#{author}\\)"
+  end
+  puts author_regex
+
+  g.log(1000).author(author_regex).since('10 weeks ago').each do |commit|
     email = commit.author.email
     contributors.add(email)
     date = commit.date.strftime("%Y%m%d")
