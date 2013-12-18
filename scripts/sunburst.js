@@ -8,10 +8,6 @@ var b = {
   w: 140, h: 30, s: 3, t: 10
 };
 
-// Mapping of step names to colors.
-var colors = {
-};
-
 $("#explanation").css("top", (height - 80) / 2 + "px")
 $("#explanation").css("left", (width - 140) / 2 + "px")
 
@@ -43,6 +39,26 @@ d3.text("../data/sunburst.csv", function(text) {
   createVisualization(json);
 });
 
+function getParent(d) {
+  if (d.depth > 1) {
+    return getParent(d.parent)
+  }
+  return d.name;
+}
+
+// Mapping of step names to colors.
+var colors = {};
+
+function getColor(n) {
+  if (n in colors) {
+    return colors[n];
+  } else {
+    // Generate random color
+    colors[n] = Math.floor(Math.random()*16777215).toString(16);
+    return colors[n];
+  }
+}
+
 // Main function to draw and set up the visualization, once we have the data.
 function createVisualization(json) {
 
@@ -61,15 +77,13 @@ function createVisualization(json) {
       return (d.dx > 0.005); // 0.005 radians = 0.29 degrees
       });
 
- var color = d3.scale.category20();
-
   var path = vis.data([json]).selectAll("path")
       .data(nodes)
       .enter().append("svg:path")
       .attr("display", function(d) { return d.depth ? null : "none"; })
       .attr("d", arc)
       .attr("fill-rule", "evenodd")
-      .style("fill", function(d,i) { console.log(d); return color(i); })
+      .style("fill", function(d,i) { return getColor(getParent(d),i); })
       .style("opacity", 1)
       .on("mouseover", mouseover);
 
@@ -186,7 +200,7 @@ function updateBreadcrumbs(nodeArray, percentageString) {
 
   entering.append("svg:polygon")
       .attr("points", breadcrumbPoints)
-      .style("fill", function(d) { return colors[d.name]; });
+      .style("fill", function(d) { return colors[getParent(d)]; });
 
   entering.append("svg:text")
       .attr("x", (b.w + b.t) / 2)

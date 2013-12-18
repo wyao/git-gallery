@@ -88,7 +88,7 @@ when 'sankey'
   exec('open /Applications/Google\ Chrome.app/ clients/sankey.html --args --allow-file-access-from-files')
 when 'sunburst'
   File.open('data/sunburst.csv', 'w+') do |f|
-    Dir.glob("#{opts.repos[0]}/**/*.{rb,erb,rake,css,json}") do |file|
+    Dir.glob("#{opts.repos[0]}/**/*.{java,rb,erb,rake,css,json}") do |file|
       lines, file_name = `#{"wc -l #{file}"}`.split(' ')
       file_name.sub!(opts.repos[0]+'/', '')
       file_name.gsub!('-', '_')
